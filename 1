@@ -1,0 +1,91 @@
+using System;
+using System.Diagnostics;
+
+class Program
+{
+    static void Main()
+    {
+        // Farklı dizi boyutları
+        int[] sizes = { 100, 1000, 10000, 100000 };
+
+        foreach (var size in sizes)
+        {
+            Console.WriteLine($"Dizi Boyutu: {size}");
+            int[] array = GenerateRandomArray(size);
+
+            // Birinci yöntem: Diziyi sıralayıp k. en küçük elemanı bulma
+            int k = size / 2; 
+            var stopwatch1 = Stopwatch.StartNew();
+            int result1 = FindKthSmallestWithSorting(array, k);
+            stopwatch1.Stop();
+            Console.WriteLine($"Yöntem 1 (Sıralama) Zaman: {stopwatch1.ElapsedMilliseconds} ms, K. En Küçük Eleman: {result1}");
+
+            // İkinci yöntem: İlk k elemanı sıralayıp, diğerlerini Insertion Sort ile karşılaştırma
+            var stopwatch2 = Stopwatch.StartNew();
+            int result2 = FindKthSmallestWithInsertionSort(array, k);
+            stopwatch2.Stop();
+            Console.WriteLine($"Yöntem 2 (Insertion Sort) Zaman: {stopwatch2.ElapsedMilliseconds} ms, K. En Küçük Eleman: {result2}");
+            
+            Console.WriteLine();
+        }
+    }
+
+    
+    static int[] GenerateRandomArray(int size)
+    {
+        Random rand = new Random();
+        int[] array = new int[size];
+        for (int i = 0; i < size; i++)
+        {
+            array[i] = rand.Next(1, 100000);
+        }
+        return array;
+    }
+
+    // Yöntem 1: Diziyi sıralayıp k. en küçük elemanı bulma
+    static int FindKthSmallestWithSorting(int[] array, int k)
+    {
+        Array.Sort(array);
+        return array[k - 1]; // k. en küçük eleman (0 index olduğundan k-1)
+    }
+
+    // Yöntem 2: İlk k elemanı sıralayıp, geri kalanları insertion sort ile karşılaştırma
+    static int FindKthSmallestWithInsertionSort(int[] array, int k)
+    {
+        int[] firstKElements = new int[k];
+        Array.Copy(array, firstKElements, k);
+        InsertionSort(firstKElements);
+
+        for (int i = k; i < array.Length; i++)
+        {
+            if (array[i] < firstKElements[k - 1])
+            {
+                int temp = array[i];
+                int j = k - 1;
+                while (j > 0 && firstKElements[j - 1] > temp)
+                {
+                    firstKElements[j] = firstKElements[j - 1];
+                    j--;
+                }
+                firstKElements[j] = temp;
+            }
+        }
+        return firstKElements[k - 1];
+    }
+
+    
+    static void InsertionSort(int[] array)
+    {
+        for (int i = 1; i < array.Length; i++)
+        {
+            int key = array[i];
+            int j = i - 1;
+            while (j >= 0 && array[j] > key)
+            {
+                array[j + 1] = array[j];
+                j--;
+            }
+            array[j + 1] = key;
+        }
+    }
+}
